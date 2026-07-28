@@ -101,21 +101,88 @@ body{
   perspective:1000px; /* 자식 요소들의 3D 깊이 기준 */
   overflow:hidden;
 }
-/* 배경에 떠 있는 9:16 세로 프레임들: 그녀의 숏폼 캔버스를 공간 오브제로 */
+/* 배경에 떠 있는 9:16 세로 프레임들: 각 플랫폼의 "재생 중" 화면을 미니어처로 연출 */
 .frame{
-  position:absolute;border:1px solid var(--line);border-radius:10px;
-  aspect-ratio:9/16;pointer-events:none;
-  background:linear-gradient(160deg,rgba(37,244,238,.05),rgba(254,44,85,.05));
+  position:absolute;border:1px solid var(--line);border-radius:14px;
+  aspect-ratio:9/16;pointer-events:none;overflow:hidden;
+  background:#0a0a0e;
   transform-style:preserve-3d;transition:transform .3s ease-out;
+  box-shadow:0 20px 50px rgba(0,0,0,.45);
 }
-.frame b{
-  position:absolute;top:8px;left:10px;font-family:var(--f-mono);
-  font-size:8px;color:var(--dim);letter-spacing:.1em;font-weight:400;
+/* 프레임 안에서 "재생 중"인 추상 푸티지: 플랫폼별 색으로 흐르는 그라디언트 */
+.footage{
+  position:absolute;inset:0;
+  background-size:300% 300%;
+  animation:playFootage 9s ease-in-out infinite;
+  opacity:.85;
 }
-.frame:nth-child(1){width:120px;top:14%;left:7%}
-.frame:nth-child(2){width:90px;bottom:16%;left:16%}
-.frame:nth-child(3){width:140px;top:18%;right:6%}
-.frame:nth-child(4){width:85px;bottom:13%;right:15%}
+@keyframes playFootage{
+  0%{background-position:0% 0%}
+  50%{background-position:100% 100%}
+  100%{background-position:0% 0%}
+}
+/* 플랫폼별 시그니처 컬러 푸티지 */
+.frame.douyin .footage{background-image:linear-gradient(130deg,#0b0b10 10%,rgba(37,244,238,.5) 40%,rgba(254,44,85,.5) 65%,#0b0b10 90%)}
+.frame.weibo  .footage{background-image:linear-gradient(130deg,#0b0b10 10%,rgba(255,130,0,.55) 45%,rgba(255,60,60,.4) 70%,#0b0b10 90%)}
+.frame.shorts .footage{background-image:linear-gradient(130deg,#0b0b10 10%,rgba(255,0,0,.5) 45%,rgba(255,255,255,.14) 70%,#0b0b10 90%)}
+.frame.reels  .footage{background-image:linear-gradient(130deg,#0b0b10 5%,rgba(131,58,180,.55) 35%,rgba(253,29,29,.45) 60%,rgba(252,176,69,.45) 80%,#0b0b10 95%)}
+/* 스캔라인: 화면이 "살아 있는" 느낌을 주는 미세한 주사선 */
+.frame::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.12) 3px 4px);
+  pointer-events:none;
+}
+/* 상단 플랫폼 배지: 로고 대신 시그니처 컬러 점 + 이름으로 아이덴티티 표현 */
+.frame .badge-p{
+  position:absolute;top:9px;left:9px;z-index:3;
+  display:flex;align-items:center;gap:5px;
+  font-family:var(--f-mono);font-size:8px;letter-spacing:.14em;
+  color:rgba(242,240,234,.9);font-weight:500;
+  background:rgba(0,0,0,.4);padding:4px 8px;border-radius:999px;
+  backdrop-filter:blur(3px);
+}
+.frame .badge-p::before{content:'';width:6px;height:6px;border-radius:50%}
+.frame.douyin .badge-p::before{background:linear-gradient(90deg,var(--cyan),var(--red))}
+.frame.weibo  .badge-p::before{background:#ff8200}
+.frame.shorts .badge-p::before{background:#ff0000}
+.frame.reels  .badge-p::before{background:linear-gradient(45deg,#833ab4,#fd1d1d,#fcb045)}
+/* 우측 세로 UI 기둥: 숏폼 특유의 좋아요/댓글/공유 제스처를 추상 글리프로 */
+.frame .ui-col{
+  position:absolute;right:7px;bottom:34px;z-index:3;
+  display:flex;flex-direction:column;gap:10px;align-items:center;
+}
+.frame .glyph{
+  width:14px;height:14px;opacity:.85;
+  fill:none;stroke:rgba(242,240,234,.9);stroke-width:1.6;
+}
+/* 좋아요 하트가 주기적으로 콩닥거리는 마이크로 모션 */
+.frame .glyph.heart{animation:heartbeat 2.6s ease-in-out infinite;fill:rgba(254,44,85,.85);stroke:none}
+@keyframes heartbeat{0%,70%,100%{transform:scale(1)}78%{transform:scale(1.35)}86%{transform:scale(1.05)}}
+/* 하단 자막 바: 재생 중인 캡션처럼 */
+.frame .cap{
+  position:absolute;left:8px;right:26px;bottom:18px;z-index:3;
+  font-family:var(--f-mono);font-size:7px;letter-spacing:.1em;
+  color:rgba(242,240,234,.75);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+/* 재생 진행바: 각 프레임이 실제로 "재생 중"임을 알리는 시그널 */
+.frame .progress{
+  position:absolute;left:0;right:0;bottom:0;height:3px;z-index:3;
+  background:rgba(255,255,255,.12);
+}
+.frame .progress i{
+  position:absolute;left:0;top:0;bottom:0;display:block;
+  animation:playing 7s linear infinite;
+}
+.frame.douyin .progress i{background:linear-gradient(90deg,var(--cyan),var(--red))}
+.frame.weibo  .progress i{background:#ff8200}
+.frame.shorts .progress i{background:#ff0000}
+.frame.reels  .progress i{background:linear-gradient(90deg,#833ab4,#fd1d1d,#fcb045)}
+@keyframes playing{from{width:0}to{width:100%}}
+.frame:nth-of-type(1){width:130px;top:13%;left:6%}
+.frame:nth-of-type(2){width:100px;bottom:15%;left:15%}
+.frame:nth-of-type(3){width:150px;top:17%;right:5%}
+.frame:nth-of-type(4){width:95px;bottom:12%;right:14%}
 
 .hero-eyebrow{
   font-family:var(--f-mono);font-size:12px;letter-spacing:.35em;
@@ -408,11 +475,53 @@ footer{
 
 <!-- ═══════════ HERO: 3D 퍼스펙티브 무대 ═══════════ -->
 <header class="hero" id="hero">
-  <!-- 배경에 떠 있는 9:16 프레임들 (마우스 패럴랙스 대상) -->
-  <div class="frame" data-depth="18"><b>9:16 · REEL</b></div>
-  <div class="frame" data-depth="30"><b>DOUYIN</b></div>
-  <div class="frame" data-depth="12"><b>SHORTS</b></div>
-  <div class="frame" data-depth="26"><b>WEIBO</b></div>
+  <!-- 배경에 떠 있는 9:16 "재생 중" 프레임들 (마우스 패럴랙스 대상) -->
+  <!-- 각 프레임 = 플랫폼 배지 + 흐르는 푸티지 + 좋아요/댓글/공유 글리프 + 자막 + 진행바 -->
+  <div class="frame douyin" data-depth="18">
+    <div class="footage"></div>
+    <span class="badge-p">DOUYIN</span>
+    <div class="ui-col">
+      <svg class="glyph heart" viewBox="0 0 24 24"><path d="M12 21s-7-4.6-9.3-8.7C.8 8.7 2.7 5 6.2 5c2 0 3.3 1 4 2.2h1.6C12.5 6 13.8 5 15.8 5c3.5 0 5.4 3.7 3.5 7.3C17 16.4 12 21 12 21z"/></svg>
+      <svg class="glyph" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/></svg>
+      <svg class="glyph" viewBox="0 0 24 24"><path d="M14 5l7 7-7 7v-4C7 15 4 17 3 20c0-7 4-11 11-11V5z"/></svg>
+    </div>
+    <p class="cap">브랜드 숏폼 · 25s</p>
+    <div class="progress"><i></i></div>
+  </div>
+
+  <div class="frame weibo" data-depth="30">
+    <div class="footage"></div>
+    <span class="badge-p">WEIBO</span>
+    <div class="ui-col">
+      <svg class="glyph heart" viewBox="0 0 24 24"><path d="M12 21s-7-4.6-9.3-8.7C.8 8.7 2.7 5 6.2 5c2 0 3.3 1 4 2.2h1.6C12.5 6 13.8 5 15.8 5c3.5 0 5.4 3.7 3.5 7.3C17 16.4 12 21 12 21z"/></svg>
+      <svg class="glyph" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/></svg>
+    </div>
+    <p class="cap">팬덤 커뮤니티 운영</p>
+    <div class="progress"><i></i></div>
+  </div>
+
+  <div class="frame shorts" data-depth="12">
+    <div class="footage"></div>
+    <span class="badge-p">SHORTS</span>
+    <div class="ui-col">
+      <svg class="glyph heart" viewBox="0 0 24 24"><path d="M12 21s-7-4.6-9.3-8.7C.8 8.7 2.7 5 6.2 5c2 0 3.3 1 4 2.2h1.6C12.5 6 13.8 5 15.8 5c3.5 0 5.4 3.7 3.5 7.3C17 16.4 12 21 12 21z"/></svg>
+      <svg class="glyph" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/></svg>
+      <svg class="glyph" viewBox="0 0 24 24"><path d="M14 5l7 7-7 7v-4C7 15 4 17 3 20c0-7 4-11 11-11V5z"/></svg>
+    </div>
+    <p class="cap">하이라이트 · 경기 직후</p>
+    <div class="progress"><i></i></div>
+  </div>
+
+  <div class="frame reels" data-depth="26">
+    <div class="footage"></div>
+    <span class="badge-p">REELS</span>
+    <div class="ui-col">
+      <svg class="glyph heart" viewBox="0 0 24 24"><path d="M12 21s-7-4.6-9.3-8.7C.8 8.7 2.7 5 6.2 5c2 0 3.3 1 4 2.2h1.6C12.5 6 13.8 5 15.8 5c3.5 0 5.4 3.7 3.5 7.3C17 16.4 12 21 12 21z"/></svg>
+      <svg class="glyph" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/></svg>
+    </div>
+    <p class="cap">브랜드 톤앤매너</p>
+    <div class="progress"><i></i></div>
+  </div>
 
   <p class="hero-eyebrow">Marketing · Content Creator</p>
   <h1 class="hero-name" id="heroName">정사가</h1>
